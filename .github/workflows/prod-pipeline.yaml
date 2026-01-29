@@ -56,12 +56,12 @@ jobs:
 
       - name: Update image in Kustomize (production)
         run: |
-          cd gitops-v2/application/overlays/production
+          cd gitops-v2/applications/overlays/production
           kustomize edit set image ghcr.io/fabiossena/${{ env.PROJECT_NAME }}=${{ needs.build-and-push.outputs.image_tag }}
 
       - name: Build Kustomize output (dry run)
         run: |
-          cd gitops-v2/application/overlays/production
+          cd gitops-v2/applications/overlays/production
           kustomize build .
 
       - name: Commit and push changes
@@ -69,7 +69,7 @@ jobs:
           cd gitops-v2
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
-          git add overlays/production/kustomization.yaml
+          git add applications/overlays/production/kustomization.yaml
           git commit -m "chore: update ${{ env.PROJECT_NAME }} image to ${{ needs.build-and-push.outputs.image_tag }}" || echo "No changes to commit"
           git push origin main
 

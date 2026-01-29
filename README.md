@@ -36,12 +36,12 @@ Send a message
 bash
 # Basic message
 curl -X POST http://localhost:8980/send \
-  -H "Content-Type: application/json" \
+  -H "Content-Type: applications/json" \
   -d '{"value": "Hello Redpanda!"}'
 
 # With specific topic
 curl -X POST http://localhost:8980/send \
-  -H "Content-Type: application/json" \
+  -H "Content-Type: applications/json" \
   -d '{
     "topic": "user-events",
     "key": "user123",
@@ -50,7 +50,7 @@ curl -X POST http://localhost:8980/send \
 
 # With headers
 curl -X POST http://localhost:8980/send \
-  -H "Content-Type: application/json" \
+  -H "Content-Type: applications/json" \
   -d '{
     "value": "Message with headers",
     "headers": {

@@ -345,7 +345,7 @@ func (p *KafkaProducer) createRecord(topic string, msg Message) *kgo.Record {
 		{Key: "timestamp", Value: []byte(timestamp.Format(time.RFC3339))},
 		{Key: "source", Value: []byte("go-api-producer")},
 		{Key: "environment", Value: []byte(p.config.Environment)},
-		{Key: "content_type", Value: []byte("application/json")},
+		{Key: "content_type", Value: []byte("applications/json")},
 	}
 
 	// Adicionar headers do usuário
@@ -519,7 +519,7 @@ func (h *HTTPHandler) TopicsHandler(w http.ResponseWriter, r *http.Request) {
 
 // sendJSON sends a JSON response
 func (h *HTTPHandler) sendJSON(w http.ResponseWriter, status int, data interface{}) {
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Content-Type", "applications/json")
 	w.Header().Set("X-Content-Type-Options", "nosniff")
 	w.WriteHeader(status)
 	json.NewEncoder(w).Encode(data)
@@ -826,7 +826,7 @@ func (h *HTTPHandler) RootHandler(w http.ResponseWriter, r *http.Request) {
 		<h4>Simple Request Example:</h4>
 		<div class="code-block">
 curl -X POST http://` + h.config.GetServerAddress() + `/send \
-  -H "Content-Type: application/json" \
+  -H "Content-Type: applications/json" \
   -d '{
     "topic": "user.events.v1",
     "key": "user-123",
@@ -841,7 +841,7 @@ curl -X POST http://` + h.config.GetServerAddress() + `/send \
 		<h4>Structured Event Example:</h4>
 		<div class="code-block">
 curl -X POST http://` + h.config.GetServerAddress() + `/send \
-  -H "Content-Type: application/json" \
+  -H "Content-Type: applications/json" \
   -d '{
     "topic": "user.events.v1",
     "key": "user-123",
