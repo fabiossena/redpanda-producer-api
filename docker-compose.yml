@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  redpanda-api-producer:
+    build: .
+    ports:
+      - "8088:8088"
+    environment:
+      - REDPANDA_BROKERS=172.23.161.197:31092
+      # - REDPANDA_BROKERS=redpanda-client.production-messaging.svc.cluster.local:9092
+      - DEFAULT_TOPIC=api-messages
+      - PORT=8088
+    # depends_on:
+    #   - redpanda
+    # networks:
+    #   - redpanda-network
+
+  # redpanda:
+  #   image: docker.redpanda.com/redpandadata/redpanda:v23.2.11
+  #   command:
+  #     - redpanda
+  #     - start
+  #     - --smp
+  #     - "1"
+  #     - --memory
+  #     - "1G"
+  #     - --overprovisioned
+  #     - --kafka-addr
+  #     - PLAINTEXT://0.0.0.0:9092
+  #     - --advertise-kafka-addr
+  #     - PLAINTEXT://redpanda:9092
+  #   ports:
+  #     - "9092:9092"
+  #     - "9644:9644"
+  #   networks:
+  #     - redpanda-network
+
+# networks:
+#   redpanda-network:
+#     driver: bridge
