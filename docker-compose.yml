@@ -4,12 +4,12 @@ services:
   redpanda-api-producer:
     build: .
     ports:
-      - "8088:8088"
+      - "8980:8980"
     environment:
       - REDPANDA_BROKERS=172.23.161.197:31092
       # - REDPANDA_BROKERS=redpanda-client.production-messaging.svc.cluster.local:9092
       - DEFAULT_TOPIC=api-messages
-      - PORT=8088
+      - PORT=8980
     # depends_on:
     #   - redpanda
     # networks:

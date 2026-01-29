@@ -10,6 +10,6 @@ RUN go mod tidy && \
     go mod download && \
     CGO_ENABLED=0 GOOS=linux go build -o redpanda-producer-api
 
-EXPOSE 8088
+EXPOSE 8980
 
 CMD ["./redpanda-producer-api"]

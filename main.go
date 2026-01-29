@@ -39,7 +39,7 @@ func NewConfiguration() *Configuration {
 	config := &Configuration{
 		RedpandaBrokers:         []string{"redpanda-client.production-messaging.svc.cluster.local:9092"},
 		RedpandaDefaultTopic:    "go-api-topic.v1",
-		ServerPort:              "8080",
+		ServerPort:              "8980",
 		ServerHost:              "",
 		Environment:             "development",
 		LogLevel:                "info",
