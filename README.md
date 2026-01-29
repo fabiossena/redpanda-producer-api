@@ -74,12 +74,12 @@ powershell
 # Run complete local setup
 .\run-local.ps1
 
-# Test API endpoints
+<!-- # Test API endpoints
 .\scripts\test-api.ps1
 Linux/Mac
 bash
 # Make script executable
-chmod +x run-local.sh
+chmod +x run-local.sh -->
 
 # Run setup
 ./run-local.sh
@@ -88,7 +88,7 @@ Edit .env file:
 
 env
 PORT=8980
-REDPANDA_BROKERS=localhost:9092
+REDPANDA_BROKERS=localhost:9092 
 DEFAULT_TOPIC=default-topic
 LOG_LEVEL=info
 Monitoring
@@ -100,19 +100,95 @@ View messages: docker exec redpanda rpk topic consume default-topic --brokers lo
 
 Project Structure
 text
-redpanda-producer-api/
-├── main.go                 # Entry point
-├── go.mod                  # Go dependencies
-├── .env.example           # Environment template
-├── Dockerfile             # Container build
-├── docker-compose.yml     # Full stack
-├── docker-compose.dev.yml # Development
-├── run-local.ps1         # Windows setup script
-├── run-local.sh          # Linux/Mac setup script
-├── config/               # Configuration
-├── api/                  # HTTP handlers
-├── producer/             # Redpanda client
-└── scripts/              # Utility scripts
+┌─────────────────────────────────────────────┐
+│          REDPANDA PRODUCER API FLOW         │
+├─────────────────────────────────────────────┤
+│                                             │
+│  ┌─────────────────┐                        │
+│  │   HTTP Client   │                        │
+│  │  (curl/browser) │                        │
+│  └────────┬────────┘                        │
+│           │ POST /send                      │
+│           │ JSON payload                    │
+│           ▼                                 │
+│  ┌─────────────────┐                        │
+│  │   HTTP Server   │                        │
+│  │  (Go net/http)  │                        │
+│  └────────┬────────┘                        │
+│           │ Parse JSON                      │
+│           │ Validate data                   │
+│           ▼                                 │
+│  ┌─────────────────┐                        │
+│  │  API Handler    │                        │
+│  │  - Validate     │                        │
+│  │  - Transform    │                        │
+│  │  - Log request  │                        │
+│  └────────┬────────┘                        │
+│           │ Prepare message                 │
+│           │ (topic, key, value, headers)    │
+│           ▼                                 │
+│  ┌─────────────────┐                        │
+│  │ Redpanda Client │                        │
+│  │  (Producer)     │                        │
+│  │  - Connect      │                        │
+│  │  - Serialize    │                        │
+│  │  - Send async   │                        │
+│  └────────┬────────┘                        │
+│           │ Produce to Redpanda             │
+│           │ (topic partition)               │
+│           ▼                                 │
+│  ┌─────────────────┐                        │
+│  │   REDPANDA      │                        │
+│  │  Message Broker │                        │
+│  │  - Store msg    │                        │
+│  │  - Replicate    │                        │
+│  │  - Commit       │                        │
+│  └────────┬────────┘                        │
+│           │ Return success/error            │
+│           │ to client                       │
+│           ▼                                 │
+│  ┌─────────────────┐                        │
+│  │  HTTP Response  │                        │
+│  │  - 200 OK       │                        │
+│  │  - Message ID   │                        │
+│  │  - Offset       │                        │
+│  └─────────────────┘                        │
+│                                             │
+├─────────────────────────────────────────────┤
+│             SUPPORTING COMPONENTS           │
+├─────────────────────────────────────────────┤
+│                                             │
+│  ┌─────────────────────────────────────┐    │
+│  │         Configuration               │    │
+│  │  - Environment variables            │    │
+│  │  - Redpanda connection             │    │
+│  │  - Topics, ports, timeouts         │    │
+│  └─────────────────────────────────────┘    │
+│                                             │
+│  ┌─────────────────────────────────────┐    │
+│  │         Health Checks               │    │
+│  │  - /health → API status             │    │
+│  │  - /ready → Ready for traffic       │    │
+│  │  - Redpanda connection check        │    │
+│  └─────────────────────────────────────┘    │
+│                                             │
+│  ┌─────────────────────────────────────┐    │
+│  │         Metrics & Monitoring        │    │
+│  │  - Prometheus metrics               │    │
+│  │  - Request counters                │    │
+│  │  - Error rates                     │    │
+│  │  - Latency histograms              │    │
+│  └─────────────────────────────────────┘    │
+│                                             │
+│  ┌─────────────────────────────────────┐    │
+│  │         Logging & Tracing           │    │
+│  │  - Structured logging               │    │
+│  │  - Request IDs for tracing          │    │
+│  │  - Error tracking                   │    │
+│  └─────────────────────────────────────┘    │
+│                                             │
+└─────────────────────────────────────────────┘
+
 Commands Summary
 bash
 # Development with hot reload
