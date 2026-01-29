@@ -1,0 +1,83 @@
+name: Build and Push Docker Image, Then Update GitOps
+
+env:
+  PROJECT_NAME: "redpanda-producer-api"
+
+on:
+  push:
+    branches:
+      - master
+      - develop
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    outputs:
+      image_tag: ${{ steps.set-tag.outputs.image_tag }}
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout source repository
+        uses: actions/checkout@v4
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set image tag
+        id: set-tag
+        run: echo "image_tag=ghcr.io/fabiossena/{{ env.PROJECT_NAME }}:${{ github.sha }}" >> $GITHUB_OUTPUT 
+
+      - name: Build Docker image
+        run: docker build -t ghcr.io/fabiossena/{{ env.PROJECT_NAME }}:${{ github.sha }} .
+
+      - name: Push Docker image
+        run: docker push ghcr.io/fabiossena/{{ env.PROJECT_NAME }}:${{ github.sha }}
+
+  update-gitops:
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop'
+
+    steps:
+      - name: Checkout GitOps-v2 repository
+        uses: actions/checkout@v4
+        with:
+          repository: fabiossena/gitops-v2
+          token: ${{ secrets.GITOPS_CLASSIC_TOKEN }}
+          ref: main
+          path: gitops-v2
+
+      - name: Set overlays path
+        id: env-path
+        run: |
+          if [[ "${GITHUB_REF##*/}" == "master" ]]; then
+            echo "env_path=staging" >> $GITHUB_OUTPUT
+          elif [[ "${GITHUB_REF##*/}" == "develop" ]]; then
+            echo "env_path=qa" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Update image in Kustomize
+        run: |
+          cd gitops-v2/overlays/${{ steps.env-path.outputs.env_path }}
+          kustomize edit set image ghcr.io/fabiossena/{{ env.PROJECT_NAME }}=${{ needs.build-and-push.outputs.image_tag }}
+
+      - name: Build Kustomize output (dry run)
+        run: |
+          cd gitops-v2/overlays/${{ steps.env-path.outputs.env_path }}
+          kustomize build .
+
+      - name: Commit and push changes
+        run: |
+          cd gitops-v2
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add overlays/${{ steps.env-path.outputs.env_path }}/kustomization.yaml
+          git commit -m "chore: update {{ env.PROJECT_NAME }} image to ${{ needs.build-and-push.outputs.image_tag }}" || echo "No changes to commit"
+          git push origin main
