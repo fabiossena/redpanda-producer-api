@@ -56,12 +56,12 @@ jobs:
 
       - name: Update image in Kustomize (production)
         run: |
-          cd gitops-v2/overlays/production
+          cd gitops-v2/application/overlays/production
           kustomize edit set image ghcr.io/fabiossena/${{ env.PROJECT_NAME }}=${{ needs.build-and-push.outputs.image_tag }}
 
       - name: Build Kustomize output (dry run)
         run: |
-          cd gitops-v2/overlays/production
+          cd gitops-v2/application/overlays/production
           kustomize build .
 
       - name: Commit and push changes

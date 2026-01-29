@@ -65,12 +65,12 @@ jobs:
 
       - name: Update image in Kustomize
         run: |
-          cd gitops-v2/overlays/${{ steps.env-path.outputs.env_path }}
+          cd gitops-v2/application/overlays/${{ steps.env-path.outputs.env_path }}
           kustomize edit set image ghcr.io/fabiossena/${{ env.PROJECT_NAME }}=${{ needs.build-and-push.outputs.image_tag }}
 
       - name: Build Kustomize output (dry run)
         run: |
-          cd gitops-v2/overlays/${{ steps.env-path.outputs.env_path }}
+          cd gitops-v2/application/overlays/${{ steps.env-path.outputs.env_path }}
           kustomize build .
 
       - name: Commit and push changes
